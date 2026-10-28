@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Collections — {{ site_settings.brand_name }}{% include 'pagination.html' %}
+{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4 reveal">
+      <div class="eyebrow">Catalogue</div>
+      <h1 class="section-title">Our Collections</h1>
+    </div>
+    <form class="row g-2 mb-4" method="get" action="{{ url_for('public.collections') }}">
+      <div class="col-md-6">
+        <input class="form-control" type="search" name="q" placeholder="Search designs..." value="{{ q }}">
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" name="category">
+          <option value="All">All Categories</option>
+          {% for c in categories %}
+            <option value="{{ c }}" {% if category==c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-dark w-100" type="submit">Filter</button>
+      </div>
+    </form>
+
+    <div class="row g-2 mb-4">
+      {% for cat in categories %}
+        <div class="col-auto">
+          <a class="btn btn-sm btn-outline-dark" href="{{ url_for('public.collections', category=cat) }}">{{ cat }}</a>
+        </div>
+      {% endfor %}
+      <div class="col-auto">
+        <a class="btn btn-sm btn-dark" href="{{ url_for('public.collections') }}">ALL</a>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      {% for c in clothes %}
+        <div class="col-6 col-md-4 col-lg-3 reveal">
+          <div class="card product-card h-100 position-relative">
+            {% if c.availability == 'Sold' %}<span class="sold-badge">SOLD</span>{% endif %}
+            <a href="{{ url_for('public.clothing_detail', slug=c.slug) }}">
+              {% if c.primary_image %}
+                <img src="{{ c.primary_image.url }}" class="card-img-top product-img" alt="{{ c.name }}" loading="lazy" onerror="this.src='https://placehold.co/600x750?text=Udo+Tailor'">
+              {% endif %}
+            </a>
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title mb-1">{{ c.name }}</h6>
+              <p class="text-muted small mb-1">{{ c.category }}</p>
+              <p class="price mb-2">₦{{ '{:,.0f}'.format(c.price or 0) }}</p>
+              <p class="small text-muted mb-2">{{ c.availability }}</p>
+              <div class="mb-2">
+                <button class="btn btn-sm btn-outline-danger like-btn" data-id="{{ c.id }}">
+                  <i class="bi bi-heart"></i> <span class="like-count">{{ c.likes or 0 }}</span> Likes
+                </button>
+              </div>
+              <p class="small text-muted mb-2">Do you want this design?</p>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-sm btn-success yes-btn" data-id="{{ c.id }}">YES</button>
+                <button class="btn btn-sm btn-outline-secondary no-btn" data-id="{{ c.id }}">NO</button>
+              </div>
+              <a href="{{ url_for('public.clothing_detail', slug=c.slug) }}" class="btn btn-sm btn-dark mt-auto">VIEW DETAILS</a>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="col-12 text-center text-muted py-5">No designs found.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% include 'pagination.html' %}
+{% endblock %}

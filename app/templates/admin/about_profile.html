@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}About / Profile{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1>About / Profile</h1>
+  <form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    {% include 'admin/form_errors.html' %}
+    <div class="mb-3">{{ form.designer_name.label(class='form-label') }}{{ form.designer_name(class='form-control') }}</div>
+    <div class="mb-3">{{ form.designer_title.label(class='form-label') }}{{ form.designer_title(class='form-control') }}</div>
+    <div class="mb-3">{{ form.designer_bio.label(class='form-label') }}{{ form.designer_bio(class='form-control', rows=4) }}</div>
+    <div class="mb-3">
+      <label class="form-label">Profile Photograph</label>
+      {% if settings.designer_image %}<img src="{{ settings.designer_image|image_url }}" height="60" class="mb-2 d-block">{% endif %}
+      <input type="file" name="designer_image" class="form-control" accept="image/*">
+    </div>
+    <div class="mb-3">{{ form.years_experience.label(class='form-label') }}{{ form.years_experience(class='form-control') }}</div>
+    <div class="mb-3">{{ form.specialties.label(class='form-label') }}{{ form.specialties(class='form-control', rows=3) }}</div>
+    <div class="mb-3">{{ form.signature_style.label(class='form-label') }}{{ form.signature_style(class='form-control', rows=3) }}</div>
+    <button class="btn btn-dark" type="submit">{{ form.submit.label.text }}</button>
+  </form>
+
+  <hr class="my-4">
+  <h3>Achievements</h3>
+  <a href="{{ url_for('admin.achievement_new') }}" class="btn btn-sm btn-success mb-3">+ Add Achievement</a>
+  <ul class="list-group mb-4">
+    {% for a in achievements %}
+      <li class="list-group-item d-flex justify-content-between">
+        {{ a.title }} ({{ a.year or '' }})
+        <form method="post" action="{{ url_for('admin.achievement_delete', aid=a.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Client Showcase</h3>
+  <a href="{{ url_for('admin.showcase_list') }}" class="btn btn-sm btn-success mb-3">Manage Showcase</a>
+  <p class="text-muted small">{{ showcase|length }} items</p>
+</div>
+{% endblock %}

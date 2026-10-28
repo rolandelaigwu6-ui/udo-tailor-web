@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1>Admin Dashboard</h1>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('admin.clothes_list') }}" class="btn btn-outline-dark">Manage Designs</a>
+      <a href="{{ url_for('admin.showcase_list') }}" class="btn btn-outline-dark">Client Showcase</a>
+      <a href="{{ url_for('admin.about_profile') }}" class="btn btn-outline-dark">About / Profile</a>
+      <a href="{{ url_for('admin.settings') }}" class="btn btn-outline-dark">Settings</a>
+      <a href="{{ url_for('admin.activity') }}" class="btn btn-outline-dark">Activity</a>
+      <form method="post" action="{{ url_for('admin.logout') }}" class="d-inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-danger" type="submit">Logout</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h3">{{ total_designs }}</div><div class="text-muted small">Designs</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h3">{{ total_views }}</div><div class="text-muted small">Views</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h3">{{ total_likes }}</div><div class="text-muted small">Likes</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h3">{{ total_interested }}</div><div class="text-muted small">Interested</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h3">{{ total_whatsapp }}</div><div class="text-muted small">WhatsApp</div></div></div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-3">
+      <h5>Most Liked</h5>
+      <ul class="list-group">
+        {% for c in most_liked %}<li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('admin.clothing_activity', clothing_id=c.id) }}">{{ c.name }}</a><span class="badge bg-danger">{{ c.likes }}</span></li>{% endfor %}
+      </ul>
+    </div>
+    <div class="col-md-3">
+      <h5>Most Viewed</h5>
+      <ul class="list-group">
+        {% for c in most_viewed %}<li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('admin.clothing_activity', clothing_id=c.id) }}">{{ c.name }}</a><span class="badge bg-secondary">{{ c.view_count }}</span></li>{% endfor %}
+      </ul>
+    </div>
+    <div class="col-md-3">
+      <h5>Most Interested</h5>
+      <ul class="list-group">
+        {% for c in most_interested %}<li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('admin.clothing_activity', clothing_id=c.id) }}">{{ c.name }}</a><span class="badge bg-success">{{ c.interested_count }}</span></li>{% endfor %}
+      </ul>
+    </div>
+    <div class="col-md-3">
+      <h5>Most WhatsApp</h5>
+      <ul class="list-group">
+        {% for c,_ in most_whatsapp %}<li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('admin.clothing_activity', clothing_id=c.id) }}">{{ c.name }}</a><span class="badge bg-info">{{ _ }}</span></li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-2">
+    <div class="col-md-6">
+      <h5>Recent Uploads</h5>
+      <ul class="list-group">
+        {% for c in recent %}<li class="list-group-item">{{ c.name }}</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <h5>Recent Activity</h5>
+      <ul class="list-group">
+        {% for a in recent_activity %}
+          <li class="list-group-item small">
+            {% if a.visitor and a.visitor.email %}{{ a.visitor.email }}{% elif a.visitor and a.visitor.name %}{{ a.visitor.name }}{% else %}Anonymous{% endif %}
+            — {{ a.activity_type }} — {{ a.clothing.name if a.clothing else '' }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <a href="{{ url_for('admin.clothing_new') }}" class="btn btn-success">+ ADD NEW DESIGN</a>
+  </div>
+</div>
+{% endblock %}

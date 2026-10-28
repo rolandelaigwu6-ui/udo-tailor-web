@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% block title %}{{ site_settings.brand_name }} — Home{% endblock %}
+{% block content %}
+
+<section class="hero-video-wrap">
+  <video class="hero-video" muted autoplay loop playsinline poster="https://assets.mixkit.co/videos/12522/12522-thumb-720-0.jpg">
+    <source src="https://assets.mixkit.co/videos/12522/12522-720.mp4" type="video/mp4">
+  </video>
+  <video class="hero-video" muted autoplay loop playsinline poster="https://assets.mixkit.co/videos/11699/11699-thumb-720-0.jpg" style="opacity:0;">
+    <source src="https://assets.mixkit.co/videos/11699/11699-720.mp4" type="video/mp4">
+  </video>
+  <video class="hero-video" muted autoplay loop playsinline poster="https://assets.mixkit.co/videos/12524/12524-thumb-720-0.jpg" style="opacity:0;">
+    <source src="https://assets.mixkit.co/videos/12524/12524-720.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 reveal">
+          <div class="eyebrow mb-3">{{ site_settings.brand_name }}</div>
+          <h1 class="hero-title">{{ site_settings.hero_heading or 'Crafted With Precision. Designed For You.' }}</h1>
+          <p class="hero-sub mt-3 mb-4">{{ site_settings.hero_description or 'Premium tailoring and contemporary African fashion.' }}</p>
+          <a href="{{ url_for('public.collections') }}" class="btn btn-accent btn-lg">EXPLORE COLLECTION</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if just_dropped %}
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4 reveal">
+      <div class="eyebrow">Just Dropped</div>
+      <h2 class="section-title">Newest Design</h2>
+    </div>
+    <div class="row g-4 align-items-center reveal">
+      <div class="col-md-6">
+        {% if just_dropped.primary_image %}
+          <img src="{{ just_dropped.primary_image.url }}" class="img-fluid rounded" alt="{{ just_dropped.name }}" loading="lazy" onerror="this.src='https://placehold.co/800x1000?text=Udo+Tailor'">
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <h3>{{ just_dropped.name }}</h3>
+        <p class="text-muted">{{ just_dropped.category }}</p>
+        <p>{{ just_dropped.description }}</p>
+        <p class="price fs-4">₦{{ '{:,.0f}'.format(just_dropped.price or 0) }}</p>
+        <p class="small text-muted">{{ just_dropped.availability }}</p>
+        <p class="small text-muted"><i class="bi bi-heart"></i> {{ just_dropped.likes or 0 }} likes</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{{ url_for('public.clothing_detail', slug=just_dropped.slug) }}" class="btn btn-dark">VIEW DESIGN</a>
+          <button class="btn btn-success yes-btn" data-id="{{ just_dropped.id }}">I'M INTERESTED</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Latest</div>
+      <h2 class="section-title">Latest Collection</h2>
+    </div>
+    <div class="row g-4">
+      {% for c in latest %}
+        <div class="col-6 col-md-3 reveal">
+          <div class="card product-card h-100 position-relative">
+            {% if c.availability == 'Sold' %}<span class="sold-badge">SOLD</span>{% endif %}
+            <a href="{{ url_for('public.clothing_detail', slug=c.slug) }}">
+              {% if c.primary_image %}
+                <img src="{{ c.primary_image.url }}" class="card-img-top product-img" alt="{{ c.name }}" loading="lazy" onerror="this.src='https://placehold.co/600x750?text=Udo+Tailor'">
+              {% endif %}
+            </a>
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title mb-1">{{ c.name }}</h6>
+              <p class="text-muted small mb-1">{{ c.category }}</p>
+              <p class="price mb-2">₦{{ '{:,.0f}'.format(c.price or 0) }}</p>
+              <a href="{{ url_for('public.clothing_detail', slug=c.slug) }}" class="btn btn-sm btn-dark mt-auto">VIEW DESIGN</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+      <a href="{{ url_for('public.collections') }}" class="btn btn-outline-dark">VIEW ALL COLLECTIONS</a>
+    </div>
+  </div>
+</section>
+{% macro product_grid(items) %}
+<div class="row g-4">
+  {% for c in items %}
+    <div class="col-6 col-md-3 reveal">
+      <div class="card product-card h-100 position-relative">
+        {% if c.availability == 'Sold' %}<span class="sold-badge">SOLD</span>{% endif %}
+        {% if c.featured %}<span class="featured-badge">Featured</span>{% endif %}
+        {% if c.created_at and (now - c.created_at).days < 14 %}<span class="badge bg-dark position-absolute top-0 end-0 m-2">New In</span>{% endif %}
+        {% if c.availability == 'Made to Order' %}<span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">Made to Order</span>{% endif %}
+        {% if c.likes >= 5 %}<span class="badge bg-info position-absolute top-0 start-0 m-2">Popular</span>{% endif %}
+        <a href="{{ url_for('public.clothing_detail', slug=c.slug) }}">
+          {% if c.primary_image %}
+            <img src="{{ c.primary_image.url }}" class="card-img-top product-img" alt="{{ c.name }}" loading="lazy" onerror="this.src='https://placehold.co/600x750?text=Udo+Tailor'">
+          {% endif %}
+        </a>
+        <div class="card-body d-flex flex-column">
+          <h6 class="card-title mb-1">{{ c.name }}</h6>
+          <p class="text-muted small mb-1">{{ c.category }}</p>
+          <p class="price mb-2">₦{{ '{:,.0f}'.format(c.price or 0) }}</p>
+          <p class="small text-muted mb-2">{{ c.availability }}</p>
+          <div class="d-flex gap-2 mt-auto flex-wrap">
+            <button class="btn btn-sm btn-outline-danger like-btn" data-id="{{ c.id }}"><i class="bi bi-heart"></i> <span class="like-count">{{ c.likes or 0 }}</span></button>
+            <a href="{{ url_for('public.clothing_detail', slug=c.slug) }}" class="btn btn-sm btn-dark">VIEW</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% if best_loved %}
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Best-Loved</div>
+      <h2 class="section-title">Most Loved Designs</h2>
+    </div>
+    {{ product_grid(best_loved) }}
+  </div>
+</section>
+{% endif %}
+
+{% if new_in %}
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">New In</div>
+      <h2 class="section-title">Fresh Arrivals</h2>
+    </div>
+    {{ product_grid(new_in) }}
+  </div>
+</section>
+{% endif %}
+
+{% if mens %}
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Men</div>
+      <h2 class="section-title">Men's Statement Wear</h2>
+    </div>
+    {{ product_grid(mens) }}
+  </div>
+</section>
+{% endif %}
+
+{% if womens %}
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Women</div>
+      <h2 class="section-title">Women's Traditional Wear</h2>
+    </div>
+    {{ product_grid(womens) }}
+  </div>
+</section>
+{% endif %}
+
+{% if wedding %}
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Weddings</div>
+      <h2 class="section-title">Wedding & Ceremonial Wear</h2>
+    </div>
+    {{ product_grid(wedding) }}
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Assurance</div>
+      <h2 class="section-title">Crafted With Confidence</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-3 reveal"><div class="card p-3 text-center h-100"><i class="bi bi-scissors fs-2 mb-2"></i><h6>Handcrafted</h6><p class="small text-muted">Made by Udo Tailor with attention to fit and finish.</p></div></div>
+      <div class="col-md-3 reveal"><div class="card p-3 text-center h-100"><i class="bi bi-rulers fs-2 mb-2"></i><h6>Custom Measurements</h6><p class="small text-muted">Available for made-to-order designs.</p></div></div>
+      <div class="col-md-3 reveal"><div class="card p-3 text-center h-100"><i class="bi bi-chat-dots fs-2 mb-2"></i><h6>WhatsApp Consultation</h6><p class="small text-muted">Discuss your design directly with the tailor.</p></div></div>
+      <div class="col-md-3 reveal"><div class="card p-3 text-center h-100"><i class="bi bi-shield-check fs-2 mb-2"></i><h6>Confirm Before Payment</h6><p class="small text-muted">Always confirm availability and details before payment.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Explore</div>
+      <h2 class="section-title">African Styles</h2>
+    </div>
+    <div class="row g-3">
+      {% for card in category_cards %}
+        <div class="col-6 col-md-3 reveal">
+          <a href="{{ url_for('public.collections', category=card.name) }}" class="d-block position-relative overflow-hidden rounded">
+            {% if card.clothing and card.clothing.primary_image %}
+              <img src="{{ card.clothing.primary_image.url }}" class="w-100" style="height:220px;object-fit:cover;" alt="{{ card.name }}" loading="lazy" onerror="this.src='https://placehold.co/400x440?text=Udo+Tailor'">
+            {% else %}
+              <div class="bg-light" style="height:220px;"></div>
+            {% endif %}
+            <div class="position-absolute bottom-0 start-0 end-0 p-3" style="background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;">
+              <h5 class="mb-0">{{ card.name }}</h5>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Gallery</div>
+      <h2 class="section-title">The Udo Collection</h2>
+    </div>
+    <div class="row g-3">
+      {% for img in gallery_images %}
+        <div class="col-6 col-md-4 reveal">
+          <a href="{{ url_for('public.clothing_detail', slug=img.clothing.slug) }}">
+            <img src="{{ img.url }}" class="w-100 rounded" style="height:260px;object-fit:cover;" alt="{{ img.clothing.name }}" loading="lazy" onerror="this.src='https://placehold.co/400x520?text=Udo+Tailor'">
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-md-6 reveal">
+        <div class="eyebrow">Craft</div>
+        <h2 class="section-title">Crafted With Care</h2>
+        <p>Every piece is shaped with attention to fit, fabric and finish. From first measurement to final stitch, Udo Tailor blends tradition with modern design.</p>
+      </div>
+      <div class="col-md-6 reveal">
+        <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80" class="img-fluid rounded" alt="Tailoring" loading="lazy" onerror="this.src='https://placehold.co/900x600?text=Udo+Tailor'">
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if clients %}
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Clients</div>
+      <h2 class="section-title">Clients In Udo</h2>
+    </div>
+    <div class="row g-4">
+      {% for item in clients %}
+        <div class="col-md-4 reveal">
+          <div class="card product-card h-100">
+            {% if item.image_url %}
+              <img src="{{ item.image_url|image_url }}" class="card-img-top product-img" alt="{{ item.design_name }}" loading="lazy" onerror="this.src='https://placehold.co/600x750?text=Udo+Tailor'">
+            {% endif %}
+            <div class="card-body">
+              <h6>{{ item.design_name }}</h6>
+              <p class="text-muted small mb-1">{{ item.category }}</p>
+              {% if item.price %}<p class="price mb-2">₦{{ '{:,.0f}'.format(item.price) }}</p>{% endif %}
+              <p class="small">{{ item.description }}</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-md-5 reveal">
+        {% if site_settings.designer_image %}
+          <img src="{{ site_settings.designer_image|image_url }}" class="img-fluid rounded" alt="{{ site_settings.designer_name }}" loading="lazy" onerror="this.src='https://placehold.co/600x750?text=Udo+Tailor'">
+        {% else %}
+          <div class="bg-light rounded" style="height:420px;"></div>
+        {% endif %}
+      </div>
+      <div class="col-md-7 reveal">
+        <div class="eyebrow">Meet The Designer</div>
+        <h2 class="section-title">{{ site_settings.designer_name or site_settings.brand_name }}</h2>
+        <p class="text-muted">{{ site_settings.designer_title }}</p>
+        <p>{{ site_settings.designer_bio }}</p>
+        <a href="{{ url_for('public.about') }}" class="btn btn-outline-dark">Read Our Story</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section text-center" style="background:var(--brand); color:#fff;">
+  <div class="container reveal">
+    <h2 class="mb-3">Ready For A Custom Design?</h2>
+    <p class="mb-4 opacity-75">Contact Udo Tailor directly on WhatsApp to discuss your next outfit.</p>
+    {% set wa = site_settings.whatsapp or site_settings.phone %}
+    <a class="btn btn-whatsapp btn-lg" target="_blank" href="https://wa.me/{{ wa|phone_digits }}?text={{ ('Hello Udo Tailor, I would like to discuss a custom design.')|urlencode }}">CONTACT ON WHATSAPP</a>
+  </div>
+</section>
+{% endblock %}

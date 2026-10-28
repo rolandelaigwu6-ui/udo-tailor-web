@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Manage Clothes{% include 'pagination.html' %}
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Manage Clothes</h1>
+    <a href="{{ url_for('admin.clothing_new') }}" class="btn btn-success">+ ADD NEW DESIGN</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Category</th><th>Status</th><th>Likes</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for c in clothes %}
+        <tr>
+          <td>{% if c.primary_image %}<img src="{{ c.primary_image.url }}" style="width:60px;height:60px;object-fit:cover;">{% endif %}</td>
+          <td>{{ c.name }}</td>
+          <td>₦{{ '{:,.0f}'.format(c.price or 0) }}</td>
+          <td>{{ c.category }}</td>
+          <td>{{ c.availability }}</td>
+          <td>{{ c.likes or 0 }}</td>
+          <td class="d-flex gap-1">
+            <a href="{{ url_for('admin.clothing_edit', clothing_id=c.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+            <a href="{{ url_for('admin.clothing_activity', clothing_id=c.id) }}" class="btn btn-sm btn-outline-secondary">Activity</a>
+            <form method="post" action="{{ url_for('admin.clothing_delete', clothing_id=c.id) }}" onsubmit="return confirm('Delete?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'pagination.html' %}
+{% endblock %}

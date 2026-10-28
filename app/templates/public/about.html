@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}About — {{ site_settings.brand_name }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-md-5 reveal">
+        {% if site_settings.designer_image %}
+          <img src="{{ site_settings.designer_image|image_url }}" class="img-fluid rounded" alt="{{ site_settings.designer_name }}" loading="lazy" onerror="this.src='https://placehold.co/600x750?text=Udo+Tailor'">
+        {% else %}
+          <div class="bg-light rounded" style="height:420px;"></div>
+        {% endif %}
+      </div>
+      <div class="col-md-7 reveal">
+        <div class="eyebrow">Founder & Creative Director</div>
+        <h1 class="section-title">{{ site_settings.designer_name or site_settings.brand_name }}</h1>
+        <p class="text-muted">{{ site_settings.designer_title }}</p>
+        <p>{{ site_settings.designer_bio }}</p>
+        <p><strong>Years of experience:</strong> {{ site_settings.years_experience }}</p>
+        <p><strong>Specialties:</strong> {{ site_settings.specialties }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Signature Style</div>
+      <h2 class="section-title">What Makes Udo Distinct</h2>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-md-8 reveal">
+        <p>{{ site_settings.signature_style }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% if achievements %}
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Milestones</div>
+      <h2 class="section-title">Achievements</h2>
+    </div>
+    <div class="row g-4">
+      {% for a in achievements %}
+        <div class="col-md-4 reveal">
+          <div class="card h-100">
+            {% if a.image_url %}
+              <img src="{{ a.image_url|image_url }}" class="card-img-top product-img" alt="{{ a.title }}" loading="lazy" onerror="this.src='https://placehold.co/600x400?text=Udo+Tailor'">
+            {% endif %}
+            <div class="card-body">
+              <h5>{{ a.title }}</h5>
+              {% if a.year %}<p class="text-muted small">{{ a.year }}</p>{% endif %}
+              <p class="small">{{ a.description }}</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if clients %}
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Clients</div>
+      <h2 class="section-title">Clients In Udo</h2>
+    </div>
+    <div class="row g-4">
+      {% for item in clients %}
+        <div class="col-md-4 reveal">
+          <div class="card product-card h-100">
+            {% if item.image_url %}
+              <img src="{{ item.image_url|image_url }}" class="card-img-top product-img" alt="{{ item.design_name }}" loading="lazy" onerror="this.src='https://placehold.co/600x750?text=Udo+Tailor'">
+            {% endif %}
+            <div class="card-body">
+              <h6>{{ item.design_name }}</h6>
+              <p class="text-muted small mb-1">{{ item.category }}</p>
+              {% if item.price %}<p class="price mb-2">₦{{ '{:,.0f}'.format(item.price) }}</p>{% endif %}
+              <p class="small">{{ item.description }}</p>
+              {% if item.testimonial %}<blockquote class="small text-muted mt-2">“{{ item.testimonial }}”</blockquote>{% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Craft</div>
+      <h2 class="section-title">Craftsmanship</h2>
+    </div>
+    <div class="row align-items-center g-5">
+      <div class="col-md-6 reveal">
+        <p>We focus on fit, fabric and finish. Every garment is considered from consultation to delivery, ensuring comfort and confidence.</p>
+      </div>
+      <div class="col-md-6 reveal">
+        <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80" class="img-fluid rounded" alt="Craft" loading="lazy" onerror="this.src='https://placehold.co/900x600?text=Udo+Tailor'">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-white">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Process</div>
+      <h2 class="section-title">The Tailoring Process</h2>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% for n,t in [('01','Consultation'),('02','Measurements'),('03','Fabric & Design'),('04','Cutting')] %}
+          <div class="process-step reveal">
+            <div class="process-num">{{ n }}</div>
+            <h5>{{ t }}</h5>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="col-md-6">
+        {% for n,t in [('05','Sewing'),('06','Fitting'),('07','Finishing'),('08','Delivery')] %}
+          <div class="process-step reveal">
+            <div class="process-num">{{ n }}</div>
+            <h5>{{ t }}</h5>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section text-center" style="background:var(--brand); color:#fff;">
+  <div class="container reveal">
+    <h2 class="mb-3">Book An Enquiry</h2>
+    <p class="mb-4 opacity-75">Contact Udo Tailor directly on WhatsApp to discuss your next outfit.</p>
+    {% set wa = site_settings.whatsapp or site_settings.phone %}
+    <a class="btn btn-whatsapp btn-lg" target="_blank" href="https://wa.me/{{ wa|phone_digits }}?text={{ ('Hello Udo Tailor, I would like to discuss a custom design.')|urlencode }}">CONTACT ON WHATSAPP</a>
+  </div>
+</section>
+{% endblock %}

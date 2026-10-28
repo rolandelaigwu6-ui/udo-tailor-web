@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Design Activity{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1>{{ clothing.name }}</h1>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h4">{{ stats.views }}</div><div class="small text-muted">Views</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h4">{{ stats.likes }}</div><div class="small text-muted">Likes</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h4">{{ stats.interested }}</div><div class="small text-muted">Interested</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h4">{{ stats.whatsapp }}</div><div class="small text-muted">WhatsApp</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 text-center"><div class="h4">{{ stats.phone }}</div><div class="small text-muted">Phone</div></div></div>
+  </div>
+  <h4>Recent Activity</h4>
+  <div class="table-responsive">
+    <table class="table table-sm">
+      <thead><tr><th>Visitor</th><th>Action</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for a in acts %}
+        <tr>
+          <td>{% if a.visitor and a.visitor.email %}{{ a.visitor.email }}{% elif a.visitor and a.visitor.name %}{{ a.visitor.name }}{% else %}Anonymous Visitor{% endif %}</td>
+          <td>{{ a.activity_type }}</td>
+          <td>{{ a.created_at.strftime('%d %b %Y %H:%M') if a.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <a href="{{ url_for('admin.clothes_list') }}" class="btn btn-outline-dark">Back</a>
+</div>
+{% endblock %}

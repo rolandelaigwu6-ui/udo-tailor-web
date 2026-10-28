@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Admin Login{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:420px;">
+  <h2 class="mb-4">Admin Login</h2>
+  <form method="post">
+    {{ form.hidden_tag() }}
+    {% include 'admin/form_errors.html' %}
+    <div class="mb-3">
+      {{ form.username.label(class='form-label') }}
+      {{ form.username(class='form-control') }}
+    </div>
+    <div class="mb-3">
+      {{ form.password.label(class='form-label') }}
+      {{ form.password(class='form-control', type='password') }}
+    </div>
+    <button class="btn btn-dark w-100" type="submit">{{ form.submit.label.text }}</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}{{ clothing.name }} — {{ site_settings.brand_name }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-5">
+    <div class="col-md-6">
+      <div class="gallery">
+        {% set primary = clothing.primary_image %}
+        {% if primary %}
+          <img src="{{ primary.url }}" class="gallery-main mb-3" alt="{{ clothing.name }}" onerror="this.src='https://placehold.co/600x750?text=Udo+Tailor'">
+        {% else %}
+          <div class="bg-light gallery-main d-flex align-items-center justify-content-center text-muted">No Image</div>
+        {% endif %}
+        <div class="d-flex flex-wrap gap-2">
+          {% for img in clothing.images %}
+            <img src="{{ img.url }}" class="gallery-thumb {% if img==primary %}active{% endif %}" data-src="{{ img.url }}" alt="{{ clothing.name }}" onerror="this.src='https://placehold.co/84x84?text=U'">
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h1>{{ clothing.name }}</h1>
+      {% if clothing.availability == 'Sold' %}
+        <span class="badge bg-danger mb-2">SOLD</span>
+      {% elif clothing.availability == 'Unavailable' %}
+        <span class="badge bg-secondary mb-2">Unavailable</span>
+      {% elif clothing.availability == 'Made to Order' %}
+        <span class="badge bg-warning text-dark mb-2">Made to Order</span>
+      {% else %}
+        <span class="badge bg-success mb-2">Available</span>
+      {% endif %}
+      <p class="price fs-3 mt-2">₦{{ '{:,.0f}'.format(clothing.price or 0) }}</p>
+      <p>{{ clothing.description }}</p>
+      <ul class="list-unstyled">
+        <li><strong>Category:</strong> {{ clothing.category }}</li>
+        <li><strong>Material:</strong> {{ clothing.material }}</li>
+        <li><strong>Sizes:</strong> {{ clothing.sizes }}</li>
+        <li><strong>Colors:</strong> {{ clothing.colors }}</li>
+        <li><strong>Uploaded:</strong> {{ clothing.created_at.strftime('%d %b %Y') if clothing.created_at }}</li>
+      </ul>
+      <p class="text-muted small"><i class="bi bi-eye"></i> {{ clothing.view_count or 0 }} views · <i class="bi bi-heart"></i> {{ clothing.likes or 0 }} likes</p>
+
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5>Interested in this design?</h5>
+          <p class="price">Price: ₦{{ '{:,.0f}'.format(clothing.price or 0) }}</p>
+          <h6>Contact the tailor:</h6>
+          <p class="mb-1">Phone: {{ site_settings.phone }}</p>
+          <p class="mb-1">WhatsApp: {{ site_settings.whatsapp }}</p>
+          {% if site_settings.email %}<p class="mb-1">Email: {{ site_settings.email }}</p>{% endif %}
+          <h6 class="mt-3">Payment Information:</h6>
+          <p class="mb-1">Bank: {{ site_settings.bank_name }}</p>
+          <p class="mb-1">Account Name: {{ site_settings.account_name }}</p>
+          <p class="mb-1">Account Number: {{ site_settings.account_number }}</p>
+          <p class="small text-muted mt-2">Please confirm availability and order details with the tailor before sending payment.</p>
+
+          <div class="d-flex gap-2 mt-3 flex-wrap">
+            {% set wa_number = site_settings.whatsapp or site_settings.phone %}
+            {% set wa_msg = 'Hello Udo Tailor, I am interested in the ' ~ clothing.name ~ ' listed on your website for ₦' ~ '{:,.0f}'.format(clothing.price or 0) ~ '. Is this design currently available? ' ~ request.url %}
+            <a class="btn btn-whatsapp wa-link" target="_blank" data-id="{{ clothing.id }}"
+               href="https://wa.me/{{ wa_number|phone_digits }}?text={{ wa_msg|urlencode }}">
+              <i class="bi bi-whatsapp"></i> CONTACT ON WHATSAPP
+            </a>
+            {% if site_settings.phone %}
+              <a class="btn btn-outline-dark phone-link" data-id="{{ clothing.id }}" href="tel:{{ site_settings.phone }}">
+                <i class="bi bi-telephone"></i> CALL TAILOR
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Contact — {{ site_settings.brand_name }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5 reveal">
+      <div class="eyebrow">Contact</div>
+      <h1 class="section-title">Get In Touch</h1>
+    </div>
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-6">
+        <div class="card p-4">
+          <p class="mb-2"><strong>Phone:</strong> {{ site_settings.phone }}</p>
+          <p class="mb-2"><strong>WhatsApp:</strong> {{ site_settings.whatsapp }}</p>
+          <p class="mb-2"><strong>Email:</strong> {{ site_settings.email }}</p>
+          <p class="mb-2"><strong>Address:</strong> {{ site_settings.address }}</p>
+          <p class="mb-3"><strong>Opening Hours:</strong> {{ site_settings.opening_hours }}</p>
+          {% set wa = site_settings.whatsapp or site_settings.phone %}
+          <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-whatsapp" target="_blank" href="https://wa.me/{{ wa|phone_digits }}?text={{ ('Hello Udo Tailor, I would like to make an enquiry.')|urlencode }}">CONTACT ON WHATSAPP</a>
+            {% if site_settings.phone %}<a class="btn btn-outline-dark" href="tel:{{ site_settings.phone }}">CALL NOW</a>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

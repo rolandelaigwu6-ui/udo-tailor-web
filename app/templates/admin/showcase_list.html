@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Client Showcase{% include 'pagination.html' %}
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Client Showcase</h1>
+    <a href="{{ url_for('admin.showcase_new') }}" class="btn btn-success">+ Add</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Image</th><th>Design</th><th>Client</th><th>Permission</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{% if item.image_url %}<img src="{{ item.image_url|image_url }}" style="width:60px;height:60px;object-fit:cover;">{% endif %}</td>
+          <td>{{ item.design_name }}</td>
+          <td>{{ item.client_name or '—' }}</td>
+          <td>{{ 'Yes' if item.permission_confirmed else 'No' }}</td>
+          <td class="d-flex gap-1">
+            <a href="{{ url_for('admin.showcase_edit', iid=item.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+            <form method="post" action="{{ url_for('admin.showcase_delete', iid=item.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include 'pagination.html' %}
+{% endblock %}

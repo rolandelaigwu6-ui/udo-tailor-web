@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if clothing else 'New' }} Design{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:800px;">
+  <h1>{{ 'Edit Design' if clothing else 'Add New Design' }}</h1>
+  <form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    {% include 'admin/form_errors.html' %}
+    <div class="mb-3">{{ form.name.label(class='form-label') }}{{ form.name(class='form-control') }}</div>
+    <div class="mb-3">{{ form.price.label(class='form-label') }}{{ form.price(class='form-control') }}</div>
+    <div class="mb-3">{{ form.category.label(class='form-label') }}{{ form.category(class='form-control') }}</div>
+    <div class="mb-3">{{ form.description.label(class='form-label') }}{{ form.description(class='form-control', rows=4) }}</div>
+    <div class="mb-3">{{ form.material.label(class='form-label') }}{{ form.material(class='form-control') }}</div>
+    <div class="mb-3">{{ form.sizes.label(class='form-label') }}{{ form.sizes(class='form-control', placeholder='M, L, XL') }}</div>
+    <div class="mb-3">{{ form.colors.label(class='form-label') }}{{ form.colors(class='form-control', placeholder='Blue, Red') }}</div>
+    <div class="mb-3">{{ form.availability.label(class='form-label') }}{{ form.availability(class='form-select') }}</div>
+    <div class="mb-3 form-check">
+      {{ form.featured(class='form-check-input') }}
+      {{ form.featured.label(class='form-check-label') }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Images</label>
+      <input type="file" name="images" class="form-control" multiple accept="image/*">
+    </div>
+    <button class="btn btn-dark" type="submit">{{ form.submit.label.text }}</button>
+  </form>
+    {% if clothing and clothing.images|length %}
+      <div class="mb-3">
+        <label class="form-label">Existing Images</label>
+        <div class="d-flex flex-wrap gap-2">
+          {% for img in clothing.images %}
+            <div class="text-center">
+              <img src="{{ img.url }}" style="width:80px;height:80px;object-fit:cover;">
+              <div class="small">
+                {% if img.is_primary %}<span class="badge bg-primary">Primary</span>{% endif %}
+                <form method="post" action="{{ url_for('admin.image_primary', clothing_id=clothing.id, image_id=img.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-link btn-sm p-0">Set primary</button>
+                </form>
+                <form method="post" action="{{ url_for('admin.image_delete', clothing_id=clothing.id, image_id=img.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-link btn-sm text-danger p-0">Delete</button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+</div>
+{% endblock %}

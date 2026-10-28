@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Visitor Activity{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1>Visitor Activity</h1>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="card p-3 text-center"><div class="h4">{{ total_views }}</div><div class="small text-muted">Views</div></div></div>
+    <div class="col-6 col-md-3"><div class="card p-3 text-center"><div class="h4">{{ total_likes }}</div><div class="small text-muted">Likes</div></div></div>
+    <div class="col-6 col-md-3"><div class="card p-3 text-center"><div class="h4">{{ total_interested }}</div><div class="small text-muted">Interested</div></div></div>
+    <div class="col-6 col-md-3"><div class="card p-3 text-center"><div class="h4">{{ total_wa }}</div><div class="small text-muted">WhatsApp</div></div></div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm">
+      <thead><tr><th>Visitor</th><th>Design</th><th>Action</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for a in acts %}
+        <tr>
+          <td>{% if a.visitor and a.visitor.email %}{{ a.visitor.email }}{% elif a.visitor and a.visitor.name %}{{ a.visitor.name }}{% else %}Anonymous Visitor{% endif %}</td>
+          <td>{% if a.clothing %}<a href="{{ url_for('public.clothing_detail', slug=a.clothing.slug) }}">{{ a.clothing.name }}</a>{% endif %}</td>
+          <td>{{ a.activity_type }}</td>
+          <td>{{ a.created_at.strftime('%d %b %Y %H:%M') if a.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

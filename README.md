@@ -29,6 +29,11 @@ Sign in at `/admin/login`. No default credentials are installed. Tests use separ
 | `ADMIN_USERNAME` | Required initial admin username, at most 80 characters. |
 | `ADMIN_PASSWORD` | Required strong initial password, at least 12 characters. |
 | `DATABASE_URL` | Defaults to SQLite at `instance/tailor.db`. |
+| `STORAGE_BACKEND` | `local` for development; `supabase` for free cloud hosting. |
+| `SUPABASE_URL` | HTTPS project URL for cloud image storage. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only image storage credential; never exposed publicly. |
+| `SUPABASE_STORAGE_BUCKET` | Dedicated public catalogue-image bucket, defaults to `tailor-images`. |
+| `REQUIRE_EXTERNAL_STORAGE` | Free Render deployment sets `1` to prohibit ephemeral SQLite/local images. |
 | `UPLOAD_FOLDER` | Defaults to `app/static/uploads`; may be outside the project. |
 | `MAX_CONTENT_LENGTH` | Maximum entire request size; defaults to 16 MiB. |
 | `TRUST_PROXY_HEADERS` | Defaults to `0`; enable only behind one trusted proxy setting client IP and scheme. |
@@ -51,7 +56,7 @@ This command applies versioned Alembic migrations, adopts the original unversion
 
 Migration files live in `migrations/versions`. Add a new revision with its `down_revision` pointing to the preceding revision for future schema changes; `init-db` applies all pending revisions. The initial migration is intentionally not destructively reversible: restore a backup to undo it.
 
-For PostgreSQL, install a suitable driver, such as `psycopg[binary]`, and use `DATABASE_URL=postgresql+psycopg://user:password@host/database`. Provision a fresh database with `init-db`. Moving existing SQLite rows to PostgreSQL requires a separate data transfer and verification; migrations create/upgrade schemas, not cross-database data transfers.
+The PostgreSQL driver is included. Use `DATABASE_URL=postgresql+psycopg://user:password@host/database`. Provision a fresh database with `init-db`. Moving existing SQLite rows to PostgreSQL requires a separate data transfer and verification; migrations create/upgrade schemas, not cross-database data transfers.
 
 Demo catalogue entries are created only when explicitly requested:
 
@@ -87,22 +92,24 @@ Design detail visits increment views. Contact-click endpoints record WhatsApp/ph
 
 Gunicorn is included for production WSGI serving behind HTTPS; `python run.py` is the development runner. Set `SESSION_COOKIE_SECURE=1`, keep debug disabled, and configure shared rate-limit storage for multiple workers. For Redis storage, install `redis` and set `RATELIMIT_STORAGE_URI=redis://...`. Preserve the database and upload folder across deployments and back them up together. Configure a reverse proxy to forward client addresses only through a trusted deployment configuration; do not blindly trust client-provided forwarding headers.
 
-## Render deployment
+## Free Render deployment
 
-The included `render.yaml` defines a **paid single-instance web service with a 1 GB persistent disk**. Creating the Blueprint incurs Render hosting/storage charges; review Render's displayed price before creating it. No Render resources are created by committing this file.
+`render.yaml` uses **Render Free** with **Supabase Free** for durable PostgreSQL data and public catalogue images. It provisions no paid disk or paid database. Stay within both providers' free limits; do not enable paid add-ons. Provider quotas and account-verification rules can change.
 
-1. In Render, choose **New → Blueprint**, connect this GitHub repository, and select `main`.
-2. Enter an admin username and a unique password of at least 12 characters when prompted. Render generates its own signing key. Do not paste or upload your local `.env` file.
-3. Review the paid service/disk configuration and create the Blueprint.
-4. Check the deploy logs and `/healthz`, then sign in at `/admin/login` using the credentials entered in Render.
+1. Create a Supabase project in a **Free** organization. Keep the database password private.
+2. In Supabase's **Connect** dialog, choose **Session pooler** (IPv4, port 5432). Copy its PostgreSQL URI and replace the password placeholder with your database password, percent-encoding reserved characters. Render cannot use Supabase's IPv6-only direct endpoint without a paid IPv4 add-on; the free session pooler avoids that add-on.
+3. In Supabase, copy the project URL and the **legacy service-role key** from API settings. Keep the service-role key server-only. Never place it in browser code, Git, or chat messages.
+4. Close any old paid Blueprint/payment dialog in Render. Create a **new Blueprint** from the updated `main` branch. Confirm the web service is **Free** and there is **no disk**.
+5. Enter `ADMIN_USERNAME`, a unique `ADMIN_PASSWORD` of at least 12 characters, the session-pooler URI as `DATABASE_URL`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY`. Render generates its own signing key. Do not upload your local `.env` file.
+6. Deploy, check `/healthz`, then sign in at `/admin/login`. The runtime startup command applies migrations and creates the dedicated public `tailor-images` bucket if absent. An existing private bucket is never made public automatically.
 
-The build command installs requirements. `scripts/start-render.sh` runs migrations **at runtime**, when the persistent disk is mounted, and then starts Gunicorn on Render's `PORT`. The SQLite database is `/var/data/tailor.db`; images are `/var/data/uploads`. Both persist across deploys. `.python-version` selects Python 3.13 with the latest available patch. Auto-deploys are disabled initially; trigger a manual deploy when ready to release a pushed commit.
+The image bucket is for public catalogue photos only. Upload/delete requests use the service-role key on the Flask server, while browsers receive public image URLs without credentials. Database migrations enable row-level security on application tables so Supabase's anonymous Data API cannot reveal visitor emails or admin password hashes. The app connects through the database owner's server-only connection.
 
-One Gunicorn process serves multiple threads and maintains one in-memory limiter for this instance. Rate limits reset on restarts. `TRUST_PROXY_HEADERS=1` trusts one final proxy's client IP and scheme headers while leaving forwarded host headers untrusted. Use this only behind the Render proxy; verify client-IP behavior when deploying through any additional CDN/proxy.
+The build installs requirements and a patched pip. `scripts/start-render.sh` initializes the database/storage before starting Gunicorn on Render's `PORT`. `.python-version` selects Python 3.13. One Gunicorn process uses multiple threads and one in-memory limiter; rate limits reset on restarts. Proxy headers are trusted only for the final proxy's client IP and scheme. Auto-deploys are initially disabled; trigger a manual deploy when ready to release a pushed commit.
 
-The cloud database begins empty. Local database contents, uploads, and private environment files are excluded from Git and are **not transferred by a push**. To preserve local catalogue data, arrange a separate backup and transfer before publishing the cloud catalogue. Do not overwrite a running cloud database.
+Free Render services sleep after 15 idle minutes and may take about a minute to wake. Supabase Free includes database/image-storage quotas and may pause inactive projects. This setup avoids Render's 30-day-expiring free PostgreSQL offering. See [Render free limits](https://render.com/docs/free), [Supabase free quotas](https://supabase.com/docs/guides/platform/billing-on-supabase), and [database connection methods](https://supabase.com/docs/guides/database/connecting-to-postgres).
 
-A free Render web service cannot preserve this app's SQLite database and local uploads across restarts/redeploys. A free-service architecture would require separately persistent database and image storage, which the included Blueprint does not configure. See [Render persistent disks](https://render.com/docs/disks), [Flask deployment](https://render.com/docs/deploy-flask), and [Python version selection](https://render.com/docs/python-version).
+The cloud database starts empty. Git pushes do not transfer the local database or images. Arrange a separate reviewed transfer to preserve existing catalogue data. Keep local SQLite/uploads for development; free Render deployment refuses local-only storage to prevent data loss after a restart. A custom domain purchase is optional and not included in free hosting.
 
 ## Tests
 

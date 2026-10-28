@@ -26,6 +26,13 @@ def create_app(config_name=None, config_overrides=None):
 
     if config_overrides:
         app.config.update(config_overrides)
+    from config import normalize_database_url
+    app.config['SQLALCHEMY_DATABASE_URI'] = normalize_database_url(app.config['SQLALCHEMY_DATABASE_URI'])
+    if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql'):
+        options = dict(app.config.get('SQLALCHEMY_ENGINE_OPTIONS', {}))
+        for key, value in {'pool_size': 2, 'max_overflow': 2, 'pool_recycle': 300}.items():
+            options.setdefault(key, value)
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = options
     if not app.config.get('TESTING'):
         key = app.config.get('SECRET_KEY') or ''
         if len(key) < 32 or key in {'dev-secret-change-me-in-production', 'change-me-to-a-long-random-string'}:
@@ -34,6 +41,22 @@ def create_app(config_name=None, config_overrides=None):
         password = app.config.get('ADMIN_PASSWORD') or ''
         if not username.strip() or len(username) > 80 or len(password) < 12 or password.lower() in {'changeme', 'change-me-to-a-long-random-password'}:
             raise RuntimeError('Set ADMIN_USERNAME (1–80 characters) and a strong ADMIN_PASSWORD (at least 12 characters).')
+
+    backend = app.config.get('STORAGE_BACKEND')
+    if backend not in {'local', 'supabase'}:
+        raise RuntimeError('STORAGE_BACKEND must be local or supabase.')
+    if backend == 'supabase':
+        from urllib.parse import urlsplit
+        import re
+        url = urlsplit(app.config.get('SUPABASE_URL', ''))
+        if (url.scheme != 'https' or not url.hostname or url.username or url.password
+                or url.path not in {'', '/'} or url.query or url.fragment
+                or not app.config.get('SUPABASE_SERVICE_ROLE_KEY')
+                or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,62}', app.config.get('SUPABASE_STORAGE_BUCKET', ''))):
+            raise RuntimeError('Configure a valid HTTPS SUPABASE_URL, server-only SUPABASE_SERVICE_ROLE_KEY, and SUPABASE_STORAGE_BUCKET.')
+    if app.config.get('REQUIRE_EXTERNAL_STORAGE') and (backend != 'supabase' or
+            not app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql')):
+        raise RuntimeError('Free hosting requires PostgreSQL and Supabase image storage to preserve your data.')
 
     if app.config.get('TRUST_PROXY_HEADERS'):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=0, x_port=0, x_prefix=0)
@@ -89,6 +112,13 @@ def create_app(config_name=None, config_overrides=None):
         seeds.seed_admin(app)
         seeds.seed_settings()
         print('Database initialized and migrated.')
+
+    @app.cli.command('init-storage')
+    def init_storage():
+        if app.config['STORAGE_BACKEND'] == 'supabase':
+            from app.storage import initialize_bucket
+            initialize_bucket()
+            click.echo('Catalogue image storage initialized.')
 
     @app.cli.command('seed-demo')
     def seed_demo():

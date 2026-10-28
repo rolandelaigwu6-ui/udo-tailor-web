@@ -1,18 +1,13 @@
-# SQLite and uploads require a paid web service and persistent disk.
+# Free web hosting. Persistent database and images live in Supabase Free.
 services:
   - type: web
     name: udo-tailor-web
     runtime: python
-    plan: 0.5c-512mb
-    numInstances: 1
+    plan: free
     buildCommand: sh scripts/build-render.sh
     startCommand: sh scripts/start-render.sh
     healthCheckPath: /healthz
     autoDeployTrigger: "off"
-    disk:
-      name: tailor-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -21,9 +16,17 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: DATABASE_URL
-        value: sqlite:////var/data/tailor.db
-      - key: UPLOAD_FOLDER
-        value: /var/data/uploads
+        sync: false
+      - key: STORAGE_BACKEND
+        value: supabase
+      - key: REQUIRE_EXTERNAL_STORAGE
+        value: "1"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: tailor-images
       - key: SESSION_COOKIE_SECURE
         value: "1"
       - key: TRUST_PROXY_HEADERS

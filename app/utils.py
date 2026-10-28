@@ -35,6 +35,9 @@ def image_url(value):
         return ''
     if value.startswith(('http://', 'https://')):
         return value
+    if value.startswith('supabase/'):
+        from app.storage import public_url
+        return public_url(value.removeprefix('supabase/'))
     if value.startswith('uploads/'):
         return url_for('public.upload', filename=value.removeprefix('uploads/'))
     return url_for('static', filename=value)
@@ -62,6 +65,12 @@ def save_upload(file_storage):
         raise BadRequest(str(exc)) from exc
     ext = file_storage.filename.rsplit('.', 1)[1].lower()
     safe_name = f'{uuid.uuid4().hex}.{ext}'
+    if current_app.config['STORAGE_BACKEND'] == 'supabase':
+        from app.storage import upload_image
+        value = f'supabase/{safe_name}'
+        g.new_uploads = getattr(g, 'new_uploads', []) + [value]
+        upload_image(file_storage, safe_name)
+        return value
     dest = Path(current_app.config['UPLOAD_FOLDER']) / safe_name
     g.new_uploads = getattr(g, 'new_uploads', []) + [f'uploads/{safe_name}']
     file_storage.save(dest)
@@ -69,6 +78,10 @@ def save_upload(file_storage):
 
 
 def _remove_upload(value):
+    if value and value.startswith('supabase/'):
+        from app.storage import delete_image
+        delete_image(value.removeprefix('supabase/'))
+        return
     # Only generated uploads may be deleted, never bundled assets or external images.
     if not value or not value.startswith('uploads/'):
         return

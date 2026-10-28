@@ -18,7 +18,8 @@ Tailor Fashion Advertisement Web Application. A simple catalogue where the tailo
 - Config via `config.py` reading env vars.
 - Versioned Alembic migrations in `migrations/versions`; apply with `init-db`, never mutate schemas during normal startup.
 - Uploads stored in configurable UPLOAD_FOLDER; safe filenames via uuid.
-- Render uses a paid persistent disk for SQLite and uploads; migrations run at runtime before Gunicorn. Keep secrets and environment-file backups out of Git.
+- Free Render deployment uses external PostgreSQL and Supabase image storage; local SQLite/uploads remain supported for development. Never configure a paid service/disk without explicit user authorization.
+- Migrations and storage initialization run before Gunicorn. Enable PostgreSQL row-level security to protect all application tables from anonymous Data API access. Keep server credentials and environment-file backups out of Git.
 - Proxy headers are trusted only when explicitly configured for the deployment.
 
 ## Security

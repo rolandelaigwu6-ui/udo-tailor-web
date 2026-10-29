@@ -13,3 +13,7 @@ app/static/uploads/
 *.sqlite3
 *.db-*
 *.sqlite3-*
+
+# Node.js dependencies and generated files
+node_modules/
+npm-debug.log*
